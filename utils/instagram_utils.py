@@ -1,30 +1,29 @@
-import instaloader
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+import instaloader
+from instaloader.exceptions import ConnectionException
 
 # Load environment variables from .env file
 load_dotenv()
 
 def login_instagram():
     """
-    Log into Instagram using credentials stored in environment variables.
-
-    Returns:
-        tuple: Instaloader instance and the username used to log in.
+    Load session file from custom path (for 2FA accounts).
     """
     username = os.getenv("INSTA_USERNAME")
-    password = os.getenv("INSTA_PASSWORD")
-
-    if not username or not password:
-        raise ValueError("Missing INSTA_USERNAME or INSTA_PASSWORD in environment variables.")
+    if not username:
+        raise ValueError("Missing INSTA_USERNAME in .env file")
 
     L = instaloader.Instaloader()
 
+    session_path = f"/Users/kimcharming/.config/instaloader/session-{username}"
+
     try:
-        L.login(username, password)
-        print("✅ Login successful.")
-    except Exception as e:
-        print("❌ Login failed:", e)
+        L.load_session_from_file(username, filename=session_path)
+        print("✅ Logged in using session file.")
+    except FileNotFoundError:
+        print("❌ Session file not found. Please run 'instaloader --login {username}'")
         exit(1)
 
     return L, username
@@ -41,7 +40,12 @@ def get_follow_data(L: instaloader.Instaloader, username: str):
         tuple: A set of followers and a set of followees.
     """
     profile = instaloader.Profile.from_username(L.context, username)
-    print("📥 Fetching followers and followees...")
-    followers = set(profile.get_followers())
-    following = set(profile.get_followees())
-    return followers, following
+    try:
+        print("📥 Fetching followers and followees...")
+        followers = set(profile.get_followers())
+        following = set(profile.get_followees())
+        return followers, following
+    except ConnectionException as e:
+        print(f"🚫 Instagram temporarily blocked access. Reason: {e}")
+        print("⏳ Please wait 30–60 minutes before trying again.")
+        exit(1)
