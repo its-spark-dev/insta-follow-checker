@@ -31,15 +31,17 @@ def login_instagram():
 
 def get_follow_data(L: instaloader.Instaloader, username: str):
     """
-    Fetch followers and followees (people you follow) of the given Instagram profile,
-    adding a delay between requests to avoid triggering Instagram's rate limit.
+    Fetch the followers and followees for a given Instagram username.
 
     Args:
-        L (Instaloader): Authenticated Instaloader instance.
-        username (str): Instagram username.
+        L (instaloader.Instaloader): Authenticated instaloader instance.
+        username (str): Target Instagram username.
 
     Returns:
-        tuple: A set of followers and a set of followees.
+        Tuple[Set[Profile], Set[Profile]]: A set of follower profiles and a set of followee profiles.
+
+    Raises:
+        ConnectionException: If Instagram blocks access due to rate limits or bot detection.
     """
     profile = instaloader.Profile.from_username(L.context, username)
 
