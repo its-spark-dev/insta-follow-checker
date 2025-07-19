@@ -1,2 +1,2 @@
-instaloader==4.14.2 # Core Instagram data fetching
-python-dotenv==1.1.1 # Load credentials from .env file
+instaloader         # Core Instagram data fetching
+python-dotenv       # Load credentials from .env file
