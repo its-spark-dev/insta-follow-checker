@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 from dotenv import load_dotenv
 import instaloader
@@ -18,7 +19,8 @@ def login_instagram():
 
     L = instaloader.Instaloader()
 
-    session_path = f"/Users/kimcharming/.config/instaloader/session-{username}"
+    session_dir = os.getenv("SESSION_DIR", str(Path.home() / ".config" / "instaloader"))
+    session_path = Path(session_dir).expanduser() / f"session-{username}"
 
     try:
         L.load_session_from_file(username, filename=session_path)
