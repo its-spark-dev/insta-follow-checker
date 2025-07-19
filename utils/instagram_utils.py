@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
-import instaloader
+from instaloader import Instaloader, Profile  # Profile도 import 추가
 from instaloader.exceptions import ConnectionException
 
 # Load environment variables from .env file
@@ -17,13 +17,14 @@ def login_instagram():
     if not username:
         raise ValueError("Missing INSTA_USERNAME in .env file")
 
-    L = instaloader.Instaloader()
+    L = Instaloader()  # instaloader. 제거
 
-    session_dir = os.getenv("SESSION_DIR", str(Path.home() / ".config" / "instaloader"))
+    default_path = str(Path.home() / ".config" / "instaloader")
+    session_dir = os.getenv("SESSION_DIR", default_path)
     session_path = Path(session_dir).expanduser() / f"session-{username}"
 
     try:
-        L.load_session_from_file(username, filename=session_path)
+        L.load_session_from_file(username, filename=str(session_path))
         print("✅ Logged in using session file.")
     except FileNotFoundError:
         print("❌ Session file not found. Please run 'instaloader --login {username}'")
@@ -31,7 +32,7 @@ def login_instagram():
 
     return L, username
 
-def get_follow_data(L: instaloader.Instaloader, username: str):
+def get_follow_data(L: Instaloader, username: str):
     """
     Fetch the followers and followees for a given Instagram username.
 
@@ -45,7 +46,7 @@ def get_follow_data(L: instaloader.Instaloader, username: str):
     Raises:
         ConnectionException: If Instagram blocks access due to rate limits or bot detection.
     """
-    profile = instaloader.Profile.from_username(L.context, username)
+    profile = Profile.from_username(L.context, username)  # instaloader. 제거
 
     try:
         print("📥 Fetching followers...")
