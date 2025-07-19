@@ -1,5 +1,5 @@
 import csv
-import os
+from pathlib import Path
 from datetime import datetime
 
 def save_to_csv(nonfollowers, filename_prefix="not_following_back"):
@@ -10,16 +10,16 @@ def save_to_csv(nonfollowers, filename_prefix="not_following_back"):
         nonfollowers (set): A set of Instaloader Profile objects not following back.
         filename_prefix (str): Prefix for the output filename.
     """
-    output_dir = "out"
-    os.makedirs(output_dir, exist_ok=True)  # Create 'out' folder if it doesn't exist
+    output_dir = Path("out")
+    output_dir.mkdir(parents=True, exist_ok=True)  # Cross-platform directory creation
 
     # Create timestamped filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"{filename_prefix}_{timestamp}.csv"
-    filepath = os.path.join(output_dir, filename)
+    filepath = output_dir / filename
 
     # Write to CSV
-    with open(filepath, "w", newline='', encoding='utf-8') as f:
+    with filepath.open("w", newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(["Username"])
         for user in sorted(nonfollowers, key=lambda x: x.username.lower()):

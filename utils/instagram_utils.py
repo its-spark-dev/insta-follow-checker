@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
-from instaloader import Instaloader, Profile  # Profile도 import 추가
+from instaloader import Instaloader, Profile
 from instaloader.exceptions import ConnectionException
 
 # Load environment variables from .env file
@@ -17,17 +17,18 @@ def login_instagram():
     if not username:
         raise ValueError("Missing INSTA_USERNAME in .env file")
 
-    L = Instaloader()  # instaloader. 제거
+    L = Instaloader()
 
-    default_path = str(Path.home() / ".config" / "instaloader")
-    session_dir = os.getenv("SESSION_DIR", default_path)
-    session_path = Path(session_dir).expanduser() / f"session-{username}"
+    default_path = Path.home() / ".config" / "instaloader"
+    session_dir = Path(os.getenv("SESSION_DIR", default_path)).expanduser()
+    session_path = session_dir / f"session-{username}"
 
     try:
         L.load_session_from_file(username, filename=str(session_path))
         print("✅ Logged in using session file.")
     except FileNotFoundError:
-        print("❌ Session file not found. Please run 'instaloader --login {username}'")
+        print(f"❌ Session file not found at {session_path}.")
+        print(f"👉 Run: instaloader --login {username}")
         exit(1)
 
     return L, username
@@ -37,29 +38,22 @@ def get_follow_data(L: Instaloader, username: str):
     Fetch the followers and followees for a given Instagram username.
 
     Args:
-        L (instaloader.Instaloader): Authenticated instaloader instance.
+        L (Instaloader): Authenticated instaloader instance.
         username (str): Target Instagram username.
 
     Returns:
-        Tuple[Set[Profile], Set[Profile]]: A set of follower profiles and a set of followee profiles.
-
-    Raises:
-        ConnectionException: If Instagram blocks access due to rate limits or bot detection.
+        Tuple[Set[str], Set[str]]: A set of follower usernames and followee usernames.
     """
-    profile = Profile.from_username(L.context, username)  # instaloader. 제거
+    profile = Profile.from_username(L.context, username)
 
     try:
         print("📥 Fetching followers...")
-        followers = set()
-        for follower in profile.get_followers():
-            followers.add(follower.username)
-            time.sleep(3)  # 💤 Delay to prevent rate-limiting
+        followers = {f.username for f in profile.get_followers()}
+        time.sleep(3)
 
         print("📥 Fetching followees...")
-        followees = set()
-        for followee in profile.get_followees():
-            followees.add(followee.username)
-            time.sleep(3)  # 💤 Delay to prevent rate-limiting
+        followees = {f.username for f in profile.get_followees()}
+        time.sleep(3)
 
         return followers, followees
 
